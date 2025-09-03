@@ -1,8 +1,9 @@
+import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 import express from "express";
 import blogRoutes from "./routes/blog.route.js";
 import { sql } from "./utils/db.js";
-import { v2 as cloudinary } from "cloudinary";
+import { connectRabbitMQ } from "./utils/rabbitmq.js";
 
 dotenv.config();
 
@@ -14,6 +15,9 @@ cloudinary.config({
   api_key: process.env.CLOUDINARY_API_KEY as string,
   api_secret: process.env.CLOUDINARY_API_SECRET as string,
 });
+
+connectRabbitMQ();
+
 async function initDB() {
   try {
     await sql`
