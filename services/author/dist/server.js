@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import blogRoutes from "./routes/blog.route.js";
@@ -6,6 +7,8 @@ import { sql } from "./utils/db.js";
 import { connectRabbitMQ } from "./utils/rabbitmq.js";
 dotenv.config();
 const app = express();
+app.use(express.json());
+app.use(cors());
 const port = process.env.PORT || 5001;
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

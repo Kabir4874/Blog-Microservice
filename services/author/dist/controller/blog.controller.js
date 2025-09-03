@@ -1,18 +1,19 @@
 import { v2 as cloudinary } from "cloudinary";
 import getBuffer from "../utils/dataUri.js";
 import { sql } from "../utils/db.js";
+import { invalidateCacheJob } from "../utils/rabbitmq.js";
 import TryCatch from "../utils/TryCatch.js";
 export const createBlog = TryCatch(async (req, res) => {
     const { title, description, blog_content, category } = req.body;
     const file = req.file;
     if (!file) {
-        res.status(400).json({
+        return res.status(400).json({
             message: "No file to upload",
         });
     }
     const fileBuffer = getBuffer(file);
     if (!fileBuffer || !fileBuffer.content) {
-        res.status(400).json({
+        return res.status(400).json({
             message: "Failed to generate buffer",
         });
     }
@@ -22,7 +23,8 @@ export const createBlog = TryCatch(async (req, res) => {
     const result = await sql `INSERT INTO blogs (title,description,image,blog_content,category, author) VALUES(
     ${title},${description},${cloud.secure_url},${blog_content},${category},${req.user?._id}
   ) RETURNING *`;
-    res.status(200).json({
+    await invalidateCacheJob(["blogs:*"]);
+    return res.status(200).json({
         message: "Blog created successfully",
         blog: result[0],
     });
@@ -72,13 +74,15 @@ export const updateBlog = TryCatch(async (req, res) => {
     category= ${category || blog[0]?.category}
     WHERE id = ${id} RETURNING *;
   `;
+    await invalidateCacheJob(["blogs:*", `blog:${id}`]);
     return res.status(200).json({
         message: "Blog Updated successfully",
         blog: updatedBlog[0],
     });
 });
 export const deleteBlog = TryCatch(async (req, res) => {
-    const blog = await sql `SELECT * FROM blogs WHERE id=${req.params.id}`;
+    const id = req.params.id;
+    const blog = await sql `SELECT * FROM blogs WHERE id=${id}`;
     if (!blog.length) {
         return res.status(404).json({
             message: "Blog not found",
@@ -98,10 +102,11 @@ export const deleteBlog = TryCatch(async (req, res) => {
             console.error("Error deleting old image from Cloudinary:", error);
         });
     }
-    await sql `DELETE FROM saved_blogs WHERE blog_id=${req.params.id}`;
-    await sql `DELETE FROM comments WHERE blog_id=${req.params.id}`;
-    await sql `DELETE FROM blogs WHERE id=${req.params.id}`;
-    res.status(200).json({
+    await sql `DELETE FROM saved_blogs WHERE blog_id=${id}`;
+    await sql `DELETE FROM comments WHERE blog_id=${id}`;
+    await sql `DELETE FROM blogs WHERE id=${id}`;
+    await invalidateCacheJob(["blogs:*", `blog:${id}`]);
+    return res.status(200).json({
         message: "Blog deleted successfully",
     });
 });

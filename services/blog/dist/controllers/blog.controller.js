@@ -7,7 +7,7 @@ export const getAllBlogs = TryCatch(async (req, res) => {
     const cacheKey = `blogs:${searchQuery}:${category}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
-        res.status(200).json(JSON.parse(cached));
+        return res.status(200).json(JSON.parse(cached));
     }
     let blogs;
     if (searchQuery && category) {
@@ -49,7 +49,7 @@ export const getSingleBlog = TryCatch(async (req, res) => {
     const cacheKey = `blog:${blogId}`;
     const cached = await redis.get(cacheKey);
     if (cached) {
-        res.status(200).json(JSON.parse(cached));
+        return res.status(200).json(JSON.parse(cached));
     }
     const blog = await sql `SELECT * FROM blogs WHERE id=${blogId}`;
     if (!blog.length) {
@@ -63,6 +63,6 @@ export const getSingleBlog = TryCatch(async (req, res) => {
         author: response?.data,
     };
     await redis.set(cacheKey, JSON.stringify(responseData), { EX: 3600 });
-    res.status(200).json(responseData);
+    return res.status(200).json(responseData);
 });
 //# sourceMappingURL=blog.controller.js.map
