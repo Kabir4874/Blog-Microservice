@@ -1,4 +1,5 @@
 import { v2 as cloudinary } from "cloudinary";
+import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import userRoutes from "./routes/user.route.js";
@@ -14,6 +15,7 @@ cloudinary.config({
 });
 
 app.use(express.json());
+app.use(cors());
 connectDB();
 
 app.use("/api/v1", userRoutes);

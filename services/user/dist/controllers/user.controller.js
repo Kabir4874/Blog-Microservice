@@ -16,7 +16,7 @@ export const loginUser = TryCatch(async (req, res) => {
     const token = jwt.sign({ user }, process.env.JWT_SEC, {
         expiresIn: "5d",
     });
-    res.status(200).json({
+    return res.status(200).json({
         message: "Login success",
         token,
         user,
@@ -24,16 +24,16 @@ export const loginUser = TryCatch(async (req, res) => {
 });
 export const myProfile = TryCatch(async (req, res) => {
     const user = req.user;
-    res.status(200).json(user);
+    return res.status(200).json(user);
 });
 export const getUserProfile = TryCatch(async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
-        res.status(400).json({
+        return res.status(400).json({
             message: "No user with this id",
         });
     }
-    res.status(200).json(user);
+    return res.status(200).json(user);
 });
 export const updateUser = TryCatch(async (req, res) => {
     const { name, instagram, facebook, linkedin, bio } = req.body;
@@ -47,7 +47,7 @@ export const updateUser = TryCatch(async (req, res) => {
     const token = jwt.sign({ user }, process.env.JWT_SEC, {
         expiresIn: "5d",
     });
-    res.status(200).json({
+    return res.status(200).json({
         message: "User Updated",
         token,
         user,
