@@ -1,4 +1,5 @@
 import Navbar from "@/components/navbar";
+import { AppProvider } from "@/context/AppContext";
 import type { Metadata } from "next";
 import "./globals.css";
 
@@ -15,8 +16,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`antialiased`}>
-        <Navbar />
-        {children}
+        <AppProvider>
+          <Navbar />
+          {children}
+        </AppProvider>
       </body>
     </html>
   );

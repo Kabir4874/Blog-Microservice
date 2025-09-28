@@ -1,12 +1,14 @@
 "use client";
+import { useAppData } from "@/context/AppContext";
 import { cn } from "@/lib/utils";
-import { LogIn, Menu, X } from "lucide-react";
+import { CircleUserRoundIcon, LogIn, Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "./ui/button";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { loading, isAuth } = useAppData();
 
   return (
     <nav className="bg-white shadow-md p-4 z-50">
@@ -30,11 +32,21 @@ const Navbar = () => {
               Saved Blogs
             </Link>
           </li>
-          <li>
-            <Link href={"/login"} className="hover:text-blue-500">
-              <LogIn />
-            </Link>
-          </li>
+          {loading ? (
+            ""
+          ) : (
+            <li>
+              {isAuth ? (
+                <Link href={"/profile"} className="hover:text-blue-500">
+                  <CircleUserRoundIcon />
+                </Link>
+              ) : (
+                <Link href={"/login"} className="hover:text-blue-500">
+                  <LogIn />
+                </Link>
+              )}
+            </li>
+          )}
         </ul>
       </div>
 
